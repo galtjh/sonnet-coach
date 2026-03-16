@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Sonnet Writing Coach</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      color-scheme: light dark;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 16px;
+      --space-4: 24px;
+      --space-5: 32px;
+      --space-6: 48px;
+      --space-7: 64px;
+      --space-8: 96px;
+
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 28px;
+      --radius-pill: 9999px;
+
+      --step--1: clamp(0.84rem, 0.8rem + 0.18vw, 0.92rem);
+      --step-0: clamp(0.98rem, 0.92rem + 0.22vw, 1.08rem);
+      --step-1: clamp(1.18rem, 1.05rem + 0.8vw, 1.55rem);
+      --step-2: clamp(1.6rem, 1.3rem + 1.8vw, 2.5rem);
+      --step-3: clamp(2.35rem, 1.75rem + 3vw, 4.5rem);
+    }
+
+    [data-theme="dark"] {
+      --bg: #101311;
+      --bg-soft: #151914;
+      --surface: #171b17;
+      --surface-2: #1d231e;
+      --surface-3: #242b25;
+      --text: #f3ede2;
+      --muted: #a1998c;
+      --line: #2b342d;
+      --line-strong: #445246;
+      --accent: #d7a33d;
+      --accent-strong: #f0bb54;
+      --accent-2: #7b987a;
+      --danger: #d97356;
+      --success: #88b582;
+      --warning: #d7a33d;
+      --accent-fade: rgba(215, 163, 61, 0.16);
+      --success-fade: rgba(136, 181, 130, 0.16);
+      --danger-fade: rgba(217, 115, 86, 0.16);
+      --warning-fade: rgba(215, 163, 61, 0.16);
+      --grid-line: rgba(255, 255, 255, 0.035);
+      --glass: rgba(16, 19, 17, 0.78);
+      --shadow-sm: 0 12px 28px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.34);
+      --page-gradient:
+        radial-gradient(circle at 12% 14%, rgba(215, 163, 61, 0.12), transparent 22%),
+        radial-gradient(circle at 84% 76%, rgba(123, 152, 122, 0.1), transparent 20%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 44%);
+      --panel-sheen:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
+      --hero-wash:
+        radial-gradient(circle at top left, rgba(215, 163, 61, 0.18), transparent 40%),
+        radial-gradient(circle at bottom right, rgba(123, 152, 122, 0.18), transparent 36%);
+    }
+
+    [data-theme="light"] {
+      --bg: #f4efe6;
+      --bg-soft: #efe7da;
+      --surface: #ffffff;
+      --surface-2: #f6f0e5;
+      --surface-3: #efe7da;
+      --text: #1f1a16;
+      --muted: #6c655a;
+      --line: #ded5c7;
+      --line-strong: #bba88d;
+      --accent: #b96d24;
+      --accent-strong: #d4812f;
+      --accent-2: #58745d;
+      --danger: #b85a49;
+      --success: #4d7d58;
+      --warning: #b96d24;
+      --accent-fade: rgba(185, 109, 36, 0.13);
+      --success-fade: rgba(77, 125, 88, 0.14);
+      --danger-fade: rgba(184, 90, 73, 0.13);
+      --warning-fade: rgba(185, 109, 36, 0.13);
+      --grid-line: rgba(31, 26, 22, 0.045);
+      --glass: rgba(244, 239, 230, 0.82);
+      --shadow-sm: 0 12px 26px rgba(51, 38, 22, 0.08);
+      --shadow-lg: 0 24px 58px rgba(51, 38, 22, 0.1);
+      --page-gradient:
+        radial-gradient(circle at 12% 14%, rgba(185, 109, 36, 0.09), transparent 22%),
+        radial-gradient(circle at 84% 76%, rgba(88, 116, 93, 0.08), transparent 20%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.46), transparent 44%);
+      --panel-sheen:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.12));
+      --hero-wash:
+        radial-gradient(circle at top left, rgba(185, 109, 36, 0.14), transparent 40%),
+        radial-gradient(circle at bottom right, rgba(88, 116, 93, 0.12), transparent 36%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "DM Sans";
+      font-size: var(--step-0);
+      line-height: 1.55;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      background: var(--page-gradient);
+      z-index: 0;
+    }
+
+    body::after {
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(180deg, transparent, black 10%, black 90%, transparent);
+      opacity: 0.55;
+      z-index: 0;
+    }
+
+    ::selection {
+      background: var(--accent-fade);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: min(1440px, calc(100% - 32px));
+      margin: 24px auto 64px;
+      display: grid;
+      gap: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: riseFade 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    .delay-1 { animation-delay: 0.04s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.16s; }
+    .delay-4 { animation-delay: 0.22s; }
+    .delay-5 { animation-delay: 0.28s; }
+
+    @keyframes riseFade {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: start;
+      padding: 20px 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--glass);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 16px;
+      z-index: 20;
+    }
+
+    .brand-copy h1,
+    .hero-copy h2,
+    .panel h3,
+    .mini-note h4,
+    .section-heading {
+      font-family: "Fraunces";
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    .brand-copy h1 {
+      font-size: var(--step-2);
+      max-width: 11ch;
+      margin-top: 6px;
+    }
+
+    .eyebrow,
+    .mono,
+    .pill,
+    .nav-link,
+    .stat-kicker,
+    .line-number,
+    .rhyme-tag,
+    .group-divider,
+    .log-tag {
+      font-family: "Space Mono";
+      font-size: var(--step--1);
+      letter-spacing: 0.03em;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .section-nav {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
+
+    .nav-link {
+      white-space: nowrap;
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      color: var(--muted);
+      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus-visible {
+      color: var(--text);
+      border-color: var(--line-strong);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .theme-toggle {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .theme-toggle:hover,
+    .theme-toggle:focus-visible {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .theme-toggle.is-spinning .toggle-icon {
+      transform: rotate(180deg) scale(0.85);
+    }
+
+    .toggle-icon {
+      display: inline-block;
+      font-size: 1.1rem;
+      transition: transform 0.35s ease;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background:
+        var(--panel-sheen),
+        linear-gradient(180deg, var(--surface), var(--surface-2));
+      box-shadow: var(--shadow-lg);
+    }
+
+    .panel > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-panel {
+      display: grid;
+      grid-template-columns: 1.45fr 0.95fr;
+      gap: 24px;
+      min-height: 320px;
+      background:
+        var(--hero-wash),
+        linear-gradient(180deg, var(--surface-2), var(--surface));
+    }
+
+    .hero-copy {
+      display: grid;
+      align-content: space-between;
+      gap: 18px;
+    }
+
+    .hero-copy h2 {
+      font-size: var(--step-3);
+      max-width: 11ch;
+      margin-top: 8px;
+    }
+
+    .hero-copy p {
+      max-width: 58ch;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .hero-kicker {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: var(--step--1);
+      margin: 0;
+    }
+
+    .stat-stack {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .stat-card {
+      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+    }
+
+    .stat-kicker {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 1.7rem;
+      font-family: "Fraunces";
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.95fr) minmax(0, 1.7fr) minmax(280px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.95fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel-header {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .panel-header h3 {
+      font-size: var(--step-1);
+    }
+
+    .panel-header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .phase-list,
+    .form-switch,
+    .mode-strip,
+    .metric-grid,
+    .notes-grid,
+    .reference-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .phase-button,
+    .form-card,
+    .mode-chip,
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      color: var(--text);
+      cursor: pointer;
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .phase-button,
+    .form-card {
+      width: 100%;
+      text-align: left;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .phase-button:hover,
+    .phase-button:focus-visible,
+    .form-card:hover,
+    .form-card:focus-visible,
+    .mode-chip:hover,
+    .mode-chip:focus-visible,
+    .btn:hover,
+    .btn:focus-visible {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+      outline: none;
+    }
+
+    .phase-button.active,
+    .form-card.active,
+    .mode-chip.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), var(--shadow-sm);
+      background:
+        linear-gradient(180deg, var(--accent-fade), transparent),
+        linear-gradient(180deg, var(--surface-2), var(--surface));
+    }
+
+    .phase-step,
+    .form-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+    }
+
+    .phase-button strong,
+    .form-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .phase-button p,
+    .form-card p,
+    .mini-note p,
+    .reference-item p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+    }
+
+    .question-card,
+    .note-card,
+    .mini-note,
+    .metric-card,
+    .detail-card,
+    .reference-item {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      box-shadow: var(--shadow-sm);
+    }
+
+    .question-head,
+    .detail-head,
+    .metric-card span,
+    .reference-item span {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .question-card p,
+    .detail-card p {
+      margin: 14px 0 0;
+      font-size: 1.05rem;
+    }
+
+    .subtle {
+      color: var(--muted);
+    }
+
+    .mode-strip {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 16px;
+    }
+
+    .mode-chip {
+      border-radius: var(--radius-pill);
+      padding: 10px 14px;
+      box-shadow: var(--shadow-sm);
+      color: var(--muted);
+    }
+
+    .mode-chip.active {
+      color: var(--text);
+    }
+
+    .mode-note {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    textarea,
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
+      color: var(--text);
+      padding: 16px 18px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    textarea {
+      resize: none;
+      min-height: 148px;
+      line-height: 1.55;
+    }
+
+    textarea::placeholder,
+    input::placeholder {
+      color: var(--muted);
+    }
+
+    textarea:focus-visible,
+    input:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      border-radius: 14px;
+      padding: 13px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+      color: var(--bg);
+      border-color: var(--accent);
+      background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+      font-weight: 700;
+    }
+
+    .btn-ghost {
+      color: var(--text);
+    }
+
+    .coach-log {
+      display: grid;
+      gap: 14px;
+      max-height: 420px;
+      overflow: auto;
+      padding-right: 4px;
+      margin-top: 18px;
+      scrollbar-width: thin;
+    }
+
+    .log-entry {
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    }
+
+    .log-entry.coach {
+      margin-right: 36px;
+      border-left: 3px solid var(--accent);
+    }
+
+    .log-entry.user {
+      margin-left: 52px;
+      background: linear-gradient(180deg, var(--surface-3), var(--surface-2));
+    }
+
+    .log-tag {
+      margin: 0 0 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .log-entry p {
+      margin: 0 0 10px;
+    }
+
+    .log-entry p:last-child {
+      margin-bottom: 0;
+    }
+
+    .scheme-track {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .scheme-chip {
+      min-width: 36px;
+      padding: 8px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      text-align: center;
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      box-shadow: var(--shadow-sm);
+      font-family: "Space Mono";
+      font-size: var(--step--1);
+    }
+
+    .notes-grid {
+      margin-top: 18px;
+    }
+
+    .mini-note h4 {
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+    }
+
+    .reference-list {
+      margin-top: 18px;
+    }
+
+    .reference-item span {
+      margin-bottom: 8px;
+    }
+
+    .reference-item strong {
+      font-weight: 700;
+    }
+
+    .draft-legend {
+      margin: -6px 0 18px;
+      color: var(--muted);
+    }
+
+    .draft-lines {
+      display: grid;
+      gap: 14px;
+    }
+
+    .group-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-top: 6px;
+      padding-top: 6px;
+    }
+
+    .group-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: linear-gradient(90deg, var(--line-strong), transparent);
+    }
+
+    .line-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 128px;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .line-row:hover,
+    .line-row:focus-within {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), var(--shadow-sm);
+    }
+
+    .line-meta {
+      display: grid;
+      gap: 8px;
+      justify-items: start;
+      padding-top: 4px;
+    }
+
+    .line-number,
+    .rhyme-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      min-width: 40px;
+      min-height: 32px;
+      padding: 4px 10px;
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      color: var(--muted);
+    }
+
+    .rhyme-tag {
+      color: var(--accent);
+    }
+
+    .line-text {
+      min-height: 62px;
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+
+    .line-meter {
+      display: grid;
+      justify-items: end;
+      align-content: start;
+      padding-top: 4px;
+    }
+
+    .meter-pill {
+      display: inline-flex;
+      justify-content: center;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      color: var(--muted);
+      text-align: center;
+      font-family: "Space Mono";
+      font-size: var(--step--1);
+    }
+
+    .meter-pill.is-good {
+      border-color: var(--success);
+      color: var(--success);
+      background:
+        linear-gradient(180deg, var(--success-fade), transparent),
+        linear-gradient(180deg, var(--surface), var(--surface-2));
+    }
+
+    .meter-pill.is-warn {
+      border-color: var(--warning);
+      color: var(--warning);
+      background:
+        linear-gradient(180deg, var(--warning-fade), transparent),
+        linear-gradient(180deg, var(--surface), var(--surface-2));
+    }
+
+    .meter-pill.is-loose {
+      border-color: var(--danger);
+      color: var(--danger);
+      background:
+        linear-gradient(180deg, var(--danger-fade), transparent),
+        linear-gradient(180deg, var(--surface), var(--surface-2));
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .metric-card {
+      min-height: 124px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .metric-card strong {
+      display: block;
+      margin-top: 18px;
+      font-family: "Fraunces";
+      font-size: 1.7rem;
+      line-height: 1;
+    }
+
+    .signal-wrap {
+      display: grid;
+      gap: 18px;
+      margin-top: 8px;
+    }
+
+    .signal-group h4,
+    .next-step-card h4 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .signal-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .signal-list li {
+      position: relative;
+      padding: 0 0 0 18px;
+      color: var(--muted);
+    }
+
+    .signal-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.72em;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--line-strong);
+      transform: translateY(-50%);
+    }
+
+    .signal-group.strong li::before {
+      background: var(--success);
+    }
+
+    .signal-group.flags li::before {
+      background: var(--danger);
+    }
+
+    .next-step-card {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, var(--accent-fade), transparent),
+        linear-gradient(180deg, var(--surface-2), var(--surface));
+      box-shadow: var(--shadow-sm);
+    }
+
+    .next-step-card p {
+      margin: 0;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    @media (max-width: 1024px) {
+      .hero-panel,
+      .workspace,
+      .studio-grid,
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-copy h1 {
+        max-width: none;
+      }
+
+      .mode-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app-shell {
+        width: min(100%, calc(100% - 20px));
+        margin: 12px auto 40px;
+        gap: 16px;
+      }
+
+      .panel,
+      .topbar {
+        padding: 20px;
+      }
+
+      .topbar {
+        top: 10px;
+      }
+
+      .topbar-actions {
+        justify-content: space-between;
+      }
+
+      .line-row {
+        grid-template-columns: 56px 1fr;
+      }
+
+      .line-meter {
+        grid-column: 1 / -1;
+        justify-items: start;
+        padding-top: 0;
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .log-entry.coach,
+      .log-entry.user {
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      .mode-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar reveal delay-1">
+      <div class="brand-copy">
+        <p class="eyebrow">Educational App · Sonnet Workshop</p>
+        <h1>Interactive Sonnet Writing Coach</h1>
+      </div>
+
+      <div class="topbar-actions">
+        <nav class="section-nav" aria-label="Page sections">
+          <a class="nav-link" href="#coach">Coach</a>
+          <a class="nav-link" href="#draft">Draft studio</a>
+          <a class="nav-link" href="#diagnostics">Diagnostics</a>
+        </nav>
+
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          type="button"
+          aria-label="Switch theme"
+        >
+          <span class="toggle-icon" aria-hidden="true">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero-panel panel reveal delay-2">
+      <div class="hero-copy">
+        <div>
+          <p class="hero-kicker">Form with feeling</p>
+          <h2>Build a sonnet that turns, breathes, and means something.</h2>
+        </div>
+
+        <p>
+          This studio turns the coaching sequence into a drafting workflow:
+          emotional core, voice, volta, image world, sound, and ending pressure.
+          It stays Socratic on purpose—it questions, nudges, and diagnoses
+          instead of writing the poem for you.
+        </p>
+      </div>
+
+      <div class="stat-stack">
+        <article class="stat-card">
+          <span class="stat-kicker">Shape</span>
+          <strong>14 lines</strong>
+          <p>Switch between Shakespearean, Petrarchan, and Spenserian structures.</p>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-kicker">Hinge</span>
+          <strong>1 real turn</strong>
+          <p>The app keeps the volta visible so the sonnet earns its form.</p>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-kicker">Music</span>
+          <strong>~10 beats</strong>
+          <p>Meter checks are approximate. Your ear still gets the final vote.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel reveal delay-3" id="coach">
+        <div class="panel-header">
+          <p class="eyebrow">Coaching sequence</p>
+          <h3>Choose the pressure point</h3>
+          <p>Move phase by phase, or jump straight to the part of the poem that is resisting you.</p>
+        </div>
+
+        <div id="phase-list" class="phase-list"></div>
+      </aside>
+
+      <section class="panel reveal delay-4">
+        <div class="panel-header">
+          <p class="eyebrow" id="phase-step-label">Phase 1</p>
+          <h3 id="phase-title">Finding the emotional core</h3>
+          <p id="phase-blurb"></p>
+        </div>
+
+        <div id="mode-strip" class="mode-strip" aria-label="What you're bringing into the session"></div>
+        <p id="mode-note" class="mode-note"></p>
+
+        <article class="question-card">
+          <div class="question-head">
+            <span class="pill">Current question</span>
+            <span id="question-count" class="subtle mono"></span>
+          </div>
+          <p id="current-question"></p>
+        </article>
+
+        <article class="note-card" style="margin-top: 16px;">
+          <label for="reflection">Your note</label>
+          <textarea
+            id="reflection"
+            placeholder="Write what is alive in the poem right now."
+          ></textarea>
+
+          <div class="button-row">
+            <button id="reflect-btn" class="btn btn-primary" type="button">Reflect on this phase</button>
+            <button id="stuck-btn" class="btn btn-ghost" type="button">Need a technique</button>
+            <button id="question-btn" class="btn btn-ghost" type="button">New question</button>
+          </div>
+        </article>
+
+        <div id="coach-log" class="coach-log" aria-live="polite"></div>
+      </section>
+
+      <aside class="panel reveal delay-5">
+        <div class="panel-header">
+          <p class="eyebrow">Form compass</p>
+          <h3>Pick a sonnet vessel</h3>
+          <p>Use form as a pressure system, not just a template.</p>
+        </div>
+
+        <div id="form-switch" class="form-switch"></div>
+
+        <article class="detail-card" style="margin-top: 18px;">
+          <div class="detail-head">
+            <span class="pill">Rhyme scheme</span>
+            <span id="form-structure" class="subtle mono"></span>
+          </div>
+
+          <div id="scheme-track" class="scheme-track"></div>
+
+          <p id="form-best-for"></p>
+          <p id="form-turn-note" class="subtle"></p>
+        </article>
+
+        <div class="notes-grid">
+          <article class="mini-note">
+            <h4>Meter reminder</h4>
+            <p>
+              Aim for iambic pentameter, but treat substitutions as expressive tools.
+              A trochee can add punch. A spondee can slow the air.
+            </p>
+          </article>
+
+          <article class="mini-note">
+            <h4>Workshop rule</h4>
+            <p>
+              Don’t solve the poem too neatly. Strong sonnets transform, complicate,
+              or surprise instead of summarizing.
+            </p>
+          </article>
+        </div>
+
+        <div class="reference-list">
+          <article class="reference-item">
+            <span>
+              <strong>Shakespeare, Sonnet 130</strong>
+              <span class="subtle mono">subversion</span>
+            </span>
+            <p>Useful when the poem needs to resist inherited clichés.</p>
+          </article>
+
+          <article class="reference-item">
+            <span>
+              <strong>Millay, “What lips my lips have kissed”</strong>
+              <span class="subtle mono">loss</span>
+            </span>
+            <p>Useful when memory needs seasonal pressure and restraint.</p>
+          </article>
+
+          <article class="reference-item">
+            <span>
+              <strong>Claude McKay, “If We Must Die”</strong>
+              <span class="subtle mono">urgency</span>
+            </span>
+            <p>Useful when formal control needs to hold political or emotional heat.</p>
+          </article>
+        </div>
+      </aside>
+    </section>
+
+    <section class="studio-grid">
+      <section class="panel reveal delay-4" id="draft">
+        <div class="panel-header">
+          <p class="eyebrow">Draft studio</p>
+          <h3>Line the sonnet out</h3>
+          <p class="draft-legend">
+            Enter the poem line by line. Syllable reads are approximate, and the turn markers shift with the form you choose.
+          </p>
+        </div>
+
+        <div id="draft-lines" class="draft-lines"></div>
+      </section>
+
+      <aside class="panel reveal delay-5" id="diagnostics">
+        <div class="panel-header">
+          <p class="eyebrow">Diagnostics</p>
+          <h3>What the draft is doing</h3>
+          <p>Checks for pressure, not perfection.</p>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span class="subtle mono">Lines drafted</span>
+            <strong id="metric-lines">0 / 14</strong>
+          </article>
+
+          <article class="metric-card">
+            <span class="subtle mono">Near pentameter</span>
+            <strong id="metric-meter">0</strong>
+          </article>
+
+          <article class="metric-card">
+            <span class="subtle mono">Turn status</span>
+            <strong id="metric-turn">Hidden</strong>
+          </article>
+
+          <article class="metric-card">
+            <span class="subtle mono">Image fuel</span>
+            <strong id="metric-image">Thin</strong>
+          </article>
+        </div>
+
+        <div class="signal-wrap">
+          <section class="signal-group flags">
+            <h4>Red flags to address</h4>
+            <ul id="red-flags" class="signal-list"></ul>
+          </section>
+
+          <section class="signal-group strong">
+            <h4>Signs of a strong draft</h4>
+            <ul id="strong-signs" class="signal-list"></ul>
+          </section>
+        </div>
+
+        <article class="next-step-card">
+          <h4>Next step</h4>
+          <p id="next-step"></p>
+        </article>
+
+        <p class="footer-note" style="margin-top: 18px;">
+          Read the poem aloud. The ear catches what the screen forgives.
+        </p>
+      </aside>
+    </section>
+    
+    <footer class="reveal delay-5" style="margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--line); text-align: center;">
+      <p class="eyebrow" style="font-size: 0.75rem;">© Copyright Thalia Zou, 17 March 2026</p>
+    </footer>
+  </div>
+
+  <script>
+    const phases = [
+      {
+        id: "emotional-core",
+        step: "Phase 1",
+        title: "Finding the emotional core",
+        blurb:
+          "A sonnet without emotional truth is just architecture. Start with the feeling beneath the topic.",
+        questions: [
+          "What feeling keeps pulling at you? Not the topic—the feeling.",
+          "If this sonnet could make someone understand one thing about your experience, what would it be?",
+          "Where in your body do you feel this emotion first?",
+          "What is the sentence you are almost afraid to say directly?"
+        ],
+        techniques: [
+          "Write three anchors: one object in the room, one bodily sensation, and one sound. Build from those instead of naming the emotion.",
+          "Free-write in prose for ninety seconds about the moment this feeling became undeniable, then circle the most concrete phrase.",
+          "Ban abstract nouns for one pass. Keep only what can be touched, heard, seen, or carried."
+        ]
+      },
+      {
+        id: "voice",
+        step: "Phase 2",
+        title: "Establishing the voice",
+        blurb:
+          "A sonnet gets sharper when the speaker is specific. Who speaks, to whom, and from what posture?",
+        questions: [
+          "Who is speaking here—someone addressing another person, the self, or the universe?",
+          "What is the speaker’s posture: pleading, defiant, wondering, resigned?",
+          "Is the voice inside the moment, or looking back from after it?",
+          "What would this speaker never say?"
+        ],
+        techniques: [
+          "Write the same thought three times: once as accusation, once as confession, once as quiet observation. Notice which voice sounds most alive.",
+          "Replace one generic phrase with wording only this speaker would use.",
+          "Name the listener in your notes, even if the poem never does."
+        ]
+      },
+      {
+        id: "volta",
+        step: "Phase 3",
+        title: "Uncovering the turn",
+        blurb:
+          "The volta is the hinge. Without a real shift in thought or pressure, the sonnet stays flat.",
+        questions: [
+          "What does the speaker believe at the start that changes by the end?",
+          "Where is the hidden “but,” “yet,” or “and then I realized”?",
+          "If the first part is the wound, what is the second part: salt, salve, or scar tissue?",
+          "What would a reader expect you to say next, and how can you turn against that expectation?"
+        ],
+        techniques: [
+          "Write line 9 first as a sentence beginning with “Yet,” “But,” or “Still.”",
+          "List two beliefs the speaker holds at once. Let the turn happen where they collide.",
+          "Cut the explanatory bridge and jump directly into the changed thought."
+        ]
+      },
+      {
+        id: "image-world",
+        step: "Phase 4",
+        title: "Building the image world",
+        blurb:
+          "Swap summary for matter. Objects, temperature, sound, and light give emotion somewhere to live.",
+        questions: [
+          "What concrete object could stand in for this feeling without becoming a dead symbol?",
+          "What is happening to light, sound, or temperature in the poem?",
+          "If you removed every abstract noun, what would remain?",
+          "What comparison surprised even you?"
+        ],
+        techniques: [
+          "Write one object, one texture, one sound, and one change in weather or light. Make each do emotional work.",
+          "Trade one simile for a harder metaphor or image collision.",
+          "Put the feeling somewhere unexpected: grocery aisle, sink, stairwell, bus stop."
+        ]
+      },
+      {
+        id: "sound-music",
+        step: "Phase 5",
+        title: "Sound and music",
+        blurb:
+          "Rhythm, pauses, and rhyme shape meaning. A line should sound like what it knows.",
+        questions: [
+          "Read the line aloud. Where do you naturally pause, and is that where you want emphasis?",
+          "Which sounds repeat across your rhymes and consonants—do they help the poem or flatten it?",
+          "Where is the poem too smooth? Roughness can be expressive.",
+          "Which line should ring in the reader’s ear after the poem ends?"
+        ],
+        techniques: [
+          "Tap the line out and cut one weak word from the place where the beat drifts.",
+          "Try one purposeful caesura with a comma, dash, or syntactic hinge.",
+          "Read backward line by line to hear each line fresh instead of through its narrative."
+        ]
+      },
+      {
+        id: "ending",
+        step: "Phase 6",
+        title: "The ending pressure",
+        blurb:
+          "In a Shakespearean sonnet the couplet is dangerous. In any sonnet, the close should transform more than summarize.",
+        questions: [
+          "Does the ending resolve too neatly?",
+          "Could the poem end on a question rather than an answer?",
+          "What if the final lines contradicted the logic that came before?",
+          "Is the ending the one you expected when you began?"
+        ],
+        techniques: [
+          "Write three endings: one that resolves, one that questions, and one that undercuts itself. Keep the least tidy.",
+          "Cut the moral. Let the final image or turn carry the meaning instead.",
+          "If the last lines explain, replace explanation with consequence."
+        ]
+      }
+    ];
+
+    const forms = {
+      shakespearean: {
+        label: "Shakespearean",
+        structure: "3 quatrains + couplet",
+        scheme: ["A", "B", "A", "B", "C", "D", "C", "D", "E", "F", "E", "F", "G", "G"],
+        bestFor: "Best for building an argument, unfolding pressure across quatrains, and landing a final twist or complication.",
+        turnNote: "Common turn zones: line 9 and the closing couplet.",
+        turns: [9, 13],
+        headers: {
+          0: "Quatrain I",
+          4: "Quatrain II",
+          8: "Quatrain III · possible turn",
+          12: "Couplet · sharpen the surprise"
+        }
+      },
+      petrarchan: {
+        label: "Petrarchan",
+        structure: "Octave + sestet",
+        scheme: ["A", "B", "B", "A", "A", "B", "B", "A", "C", "D", "E", "C", "D", "E"],
+        bestFor: "Best for emotional contrast, revelation, and a clear hinge between setup and change in thought.",
+        turnNote: "The classic turn lives between line 8 and line 9.",
+        turns: [9],
+        headers: {
+          0: "Octave",
+          8: "Sestet · the turn"
+        }
+      },
+      spenserian: {
+        label: "Spenserian",
+        structure: "Linked quatrains + couplet",
+        scheme: ["A", "B", "A", "B", "B", "C", "B", "C", "C", "D", "C", "D", "E", "E"],
+        bestFor: "Best for flowing narrative, linked imagery, and argument that wants one stanza to pull into the next.",
+        turnNote: "The interlocking rhyme favors continuity; make the turn audible, not just structural.",
+        turns: [9, 13],
+        headers: {
+          0: "Linked Quatrain I",
+          4: "Linked Quatrain II",
+          8: "Linked Quatrain III · possible turn",
+          12: "Couplet"
+        }
+      }
+    };
+
+    const sessionModes = {
+      emotion: {
+        label: "Emotion",
+        note: "Start with the feeling beneath the subject. Don’t polish it yet.",
+        placeholder: "What feeling keeps tugging at the poem? Where does it live—in the body, in the room, in one exact memory?"
+      },
+      image: {
+        label: "Image",
+        note: "Bring the poem one object, one texture, or one sensory shift.",
+        placeholder: "What object, light, sound, or temperature belongs to this poem?"
+      },
+      line: {
+        label: "Line",
+        note: "Bring one live line and test its rhythm, image, or pressure.",
+        placeholder: "Paste a line or two. What feels alive, and what feels too smooth, vague, or forced?"
+      },
+      draft: {
+        label: "Full draft",
+        note: "Use the coach to find the weak hinge, the flat image, or the over-neat ending.",
+        placeholder: "Describe the section that needs help, or paste a passage and say what is resisting you."
+      }
+    };
+
+    const abstractWords = [
+      "love", "loss", "grief", "sadness", "joy", "pain", "hope", "fear",
+      "heart", "time", "soul", "beauty", "truth", "memory", "anger",
+      "loneliness", "dream", "fate", "desire", "sorrow"
+    ];
+
+    const concreteWords = [
+      "cup", "coffee", "counter", "window", "door", "hand", "hands", "mouth",
+      "shoe", "street", "rain", "dust", "salt", "rust", "lamp", "kitchen",
+      "phone", "glass", "bed", "bird", "stone", "paper", "mirror", "train",
+      "bread", "coin", "coat", "laugh", "room", "light", "shadow", "throat",
+      "wrist", "stomach", "teeth", "floor", "snow", "smoke", "aisle",
+      "grocery", "sink", "stairs", "bus", "table", "sleeve", "pocket", "gate"
+    ];
+
+    const sensoryWords = [
+      "light", "bright", "dark", "warm", "cold", "hot", "loud", "quiet",
+      "sharp", "bitter", "sweet", "salt", "rough", "soft", "echo", "glow",
+      "scent", "smell", "taste", "whisper", "clang", "humid", "frost",
+      "shadow", "glitter", "steam", "wind", "hiss", "click", "dim"
+    ];
+
+    const bodyWords = [
+      "throat", "chest", "lungs", "hands", "hand", "mouth", "jaw", "shoulder",
+      "stomach", "gut", "skin", "pulse", "wrist", "back", "spine", "eyes", "teeth"
+    ];
+
+    const contrastWords = [
+      "but", "yet", "however", "though", "still", "instead", "until",
+      "unless", "except", "nevertheless"
+    ];
+
+    const summaryWords = ["so", "thus", "therefore", "in short", "in sum"];
+
+    const root = document.documentElement;
+    const themeToggle = document.getElementById("theme-toggle");
+    const phaseList = document.getElementById("phase-list");
+    const formSwitch = document.getElementById("form-switch");
+    const modeStrip = document.getElementById("mode-strip");
+    const phaseStepLabel = document.getElementById("phase-step-label");
+    const phaseTitle = document.getElementById("phase-title");
+    const phaseBlurb = document.getElementById("phase-blurb");
+    const currentQuestion = document.getElementById("current-question");
+    const questionCount = document.getElementById("question-count");
+    const reflection = document.getElementById("reflection");
+    const modeNote = document.getElementById("mode-note");
+    const coachLog = document.getElementById("coach-log");
+    const reflectBtn = document.getElementById("reflect-btn");
+    const stuckBtn = document.getElementById("stuck-btn");
+    const questionBtn = document.getElementById("question-btn");
+    const formStructure = document.getElementById("form-structure");
+    const schemeTrack = document.getElementById("scheme-track");
+    const formBestFor = document.getElementById("form-best-for");
+    const formTurnNote = document.getElementById("form-turn-note");
+    const draftLines = document.getElementById("draft-lines");
+    const metricLines = document.getElementById("metric-lines");
+    const metricMeter = document.getElementById("metric-meter");
+    const metricTurn = document.getElementById("metric-turn");
+    const metricImage = document.getElementById("metric-image");
+    const redFlags = document.getElementById("red-flags");
+    const strongSigns = document.getElementById("strong-signs");
+    const nextStep = document.getElementById("next-step");
+
+    let currentPhaseIndex = 0;
+    let currentForm = "shakespearean";
+    let currentMode = "emotion";
+    let questionCursor = new Array(phases.length).fill(0);
+    let techniqueCursor = new Array(phases.length).fill(0);
+    let phaseNotes = {};
+    let draft = new Array(14).fill("");
+
+    function preferredTheme() {
+      const saved = localStorage.getItem("sonnet-theme");
+      if (saved === "dark" || saved === "light") return saved;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    function applyTheme(theme) {
+      root.setAttribute("data-theme", theme);
+      const next = theme === "dark" ? "light" : "dark";
+      const icon = theme === "dark" ? "☀️" : "🌙";
+      themeToggle.setAttribute("aria-label", `Switch to ${next} mode`);
+      themeToggle.querySelector(".toggle-icon").textContent = icon;
+    }
+
+    applyTheme(preferredTheme());
+
+    themeToggle.addEventListener("click", () => {
+      themeToggle.classList.add("is-spinning");
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(next);
+      localStorage.setItem("sonnet-theme", next);
+      setTimeout(() => themeToggle.classList.remove("is-spinning"), 300);
+    });
+
+    const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    if (typeof themeQuery.addEventListener === "function") {
+      themeQuery.addEventListener("change", (event) => {
+        if (!localStorage.getItem("sonnet-theme")) {
+          applyTheme(event.matches ? "dark" : "light");
+        }
+      });
+    }
+
+    function renderPhases() {
+      phaseList.innerHTML = "";
+      phases.forEach((phase, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `phase-button ${index === currentPhaseIndex ? "active" : ""}`;
+        button.dataset.index = index;
+
+        button.innerHTML = `
+          <div class="phase-step">
+            <span class="mono">${phase.step}</span>
+            <span class="mono">${index + 1}/6</span>
+          </div>
+          <strong>${phase.title}</strong>
+          <p>${phase.blurb}</p>
+        `;
+
+        phaseList.appendChild(button);
+      });
+    }
+
+    function renderForms() {
+      formSwitch.innerHTML = "";
+      Object.entries(forms).forEach(([key, form]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `form-card ${key === currentForm ? "active" : ""}`;
+        button.dataset.form = key;
+
+        button.innerHTML = `
+          <div class="form-meta">
+            <span class="mono">${form.structure}</span>
+            <span class="mono">${form.scheme.join("")}</span>
+          </div>
+          <strong>${form.label}</strong>
+          <p>${form.bestFor}</p>
+        `;
+
+        formSwitch.appendChild(button);
+      });
+
+      const selected = forms[currentForm];
+      formStructure.textContent = selected.structure;
+      formBestFor.textContent = selected.bestFor;
+      formTurnNote.textContent = selected.turnNote;
+      schemeTrack.innerHTML = selected.scheme.map((letter) => `<span class="scheme-chip">${letter}</span>`).join("");
+    }
+
+    function renderModes() {
+      modeStrip.innerHTML = "";
+      Object.entries(sessionModes).forEach(([key, mode]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `mode-chip ${key === currentMode ? "active" : ""}`;
+        button.dataset.mode = key;
+        button.textContent = mode.label;
+        modeStrip.appendChild(button);
+      });
+
+      modeNote.textContent = sessionModes[currentMode].note;
+      reflection.placeholder = sessionModes[currentMode].placeholder;
+    }
+
+    function renderCurrentPhase() {
+      const phase = phases[currentPhaseIndex];
+      phaseStepLabel.textContent = phase.step;
+      phaseTitle.textContent = phase.title;
+      phaseBlurb.textContent = phase.blurb;
+      currentQuestion.textContent = phase.questions[questionCursor[currentPhaseIndex]];
+      questionCount.textContent = `${questionCursor[currentPhaseIndex] + 1} / ${phase.questions.length}`;
+      reflection.value = phaseNotes[phase.id] || "";
+      reflection.placeholder = sessionModes[currentMode].placeholder;
+    }
+
+    function addLogEntry(kind, title, blocks) {
+      const entry = document.createElement("article");
+      entry.className = `log-entry ${kind}`;
+
+      const tag = document.createElement("p");
+      tag.className = "log-tag";
+      tag.textContent = title;
+      entry.appendChild(tag);
+
+      blocks.forEach((block) => {
+        const paragraph = document.createElement("p");
+        if (typeof block === "string") {
+          paragraph.textContent = block;
+        } else {
+          const strong = document.createElement("strong");
+          strong.textContent = `${block.label} `;
+          paragraph.appendChild(strong);
+          paragraph.appendChild(document.createTextNode(block.text));
+        }
+        entry.appendChild(paragraph);
+      });
+
+      coachLog.appendChild(entry);
+      coachLog.scrollTop = coachLog.scrollHeight;
+    }
+
+    function bootLog() {
+      addLogEntry("coach", "Coach", [
+        {
+          label: "Start here:",
+          text: "Bring an emotion, image, line, or full draft. This coach asks the next question instead of solving the poem for you."
+        },
+        {
+          label: "First question:",
+          text: phases[0].questions[0]
+        }
+      ]);
+    }
+
+    function escapeRegExp(text) {
+      return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function countHits(text, terms) {
+      return terms.reduce((count, term) => {
+        const source = term.includes(" ")
+          ? escapeRegExp(term)
+          : `\\b${escapeRegExp(term)}\\b`;
+        const regex = new RegExp(source, "g");
+        return count + (text.match(regex) || []).length;
+      }, 0);
+    }
+
+    function hasAny(text, terms) {
+      return terms.some((term) => {
+        const source = term.includes(" ")
+          ? escapeRegExp(term)
+          : `\\b${escapeRegExp(term)}\\b`;
+        return new RegExp(source).test(text);
+      });
+    }
+
+    function analyzeText(text) {
+      const lower = text.toLowerCase();
+
+      return {
+        hasFirstPerson: /\b(i|my|me|mine)\b/.test(lower),
+        hasDirectAddress: /\b(you|your|yours|thee|thou)\b/.test(lower),
+        hasContrast: hasAny(lower, contrastWords),
+        hasBody: hasAny(lower, bodyWords),
+        hasConcrete: hasAny(lower, concreteWords),
+        hasSensory: hasAny(lower, sensoryWords),
+        hasPause: /[,;:—-]/.test(text),
+        abstractCount: countHits(lower, abstractWords),
+        concreteCount: countHits(lower, concreteWords) + countHits(lower, bodyWords),
+        sensoryCount: countHits(lower, sensoryWords)
+      };
+    }
+
+    function buildCoachFeedback(phaseId, text) {
+      const signal = analyzeText(text);
+      const endingLabel = currentForm === "petrarchan" ? "closing lines" : "couplet";
+
+      if (phaseId === "emotional-core") {
+        return {
+          alive: signal.hasConcrete || signal.hasBody
+            ? "There is already something tangible here, which gives the feeling a place to land."
+            : "There is live emotional pressure here, which is the right starting point.",
+          strength: signal.hasBody
+            ? "The bodily grounding keeps the feeling from floating into pure summary."
+            : signal.hasFirstPerson
+              ? "The note feels personal rather than decorative."
+              : "You already have emotional stakes, even before the imagery fully arrives.",
+          question: signal.abstractCount >= signal.concreteCount
+            ? "What single object or exact moment could carry this feeling without naming it?"
+            : signal.hasBody
+              ? "What sentence are you almost resisting because it feels too true to say plainly?"
+              : "Where does this feeling show up first—in throat, chest, hands, stomach, jaw?"
+        };
+      }
+
+      if (phaseId === "voice") {
+        return {
+          alive: signal.hasDirectAddress
+            ? "Someone is being spoken to, which sharpens the poem’s situation."
+            : "A point of view is forming, even if the listener is still hazy.",
+          strength: signal.hasFirstPerson
+            ? "The speaker sounds located in an actual experience."
+            : signal.hasConcrete
+              ? "Specific details are starting to define who this voice belongs to."
+              : "The voice has pressure; now it needs clearer shape.",
+          question: signal.hasDirectAddress
+            ? "What would this speaker never say out loud to this listener?"
+            : "Who exactly is being addressed here, and what does that relationship do to the diction?"
+        };
+      }
+
+      if (phaseId === "volta") {
+        return {
+          alive: signal.hasContrast
+            ? "There is already a hinge word in the language, which means a turn is trying to happen."
+            : "You are near the hinge; the poem just needs the changed thought to become audible.",
+          strength: signal.hasContrast
+            ? "The shift is beginning to declare itself instead of staying buried under explanation."
+            : "The setup feels ready for a second movement.",
+          question: signal.hasContrast
+            ? "What belief changes on the far side of that “but,” “yet,” or “still”?"
+            : `If line ${forms[currentForm].turns[0]} began with “Yet” or “Still,” what truth would have to follow?`
+        };
+      }
+
+      if (phaseId === "image-world") {
+        return {
+          alive: signal.hasSensory || signal.hasConcrete
+            ? "There is material here the poem can actually touch and show."
+            : "The poem wants a stronger object-world so the feeling has texture.",
+          strength: signal.hasSensory
+            ? "Light, sound, or texture is already doing emotional work."
+            : signal.hasConcrete
+              ? "The detail is specific enough to build an image field around."
+              : "The pressure is there; now give it matter.",
+          question: signal.abstractCount >= signal.concreteCount
+            ? "If you removed every abstract noun, what object, room, weather shift, or action would remain?"
+            : "What happens to light, sound, or temperature the moment this feeling enters the poem?"
+        };
+      }
+
+      if (phaseId === "sound-music") {
+        return {
+          alive: signal.hasPause
+            ? "The phrasing already contains a natural pause pattern."
+            : "The line has enough shape to start hearing where the stress wants to fall.",
+          strength: signal.hasPause
+            ? "A caesura or hinge is beginning to control emphasis instead of letting the syntax drift."
+            : "The diction is spare enough that the beat can be sharpened.",
+          question: "Read the line aloud once slowly: which word deserves the heaviest stress, and is the line currently delivering it?"
+        };
+      }
+
+      return {
+        alive: draft[12]?.trim() || draft[13]?.trim()
+          ? `You already have an ${endingLabel} to interrogate, which is better than polishing air.`
+          : `You’re thinking about the ending as pressure rather than closure, which is the right instinct.`,
+        strength: signal.hasContrast
+          ? "There is room for the last movement to complicate what came before."
+          : "The poem is poised for an ending that can tilt the whole argument.",
+        question: currentForm === "petrarchan"
+          ? "Could the closing lines deepen the revelation instead of tidying it up?"
+          : `Could the ${endingLabel} contradict, question, or re-aim the poem instead of summarizing it?`
+      };
+    }
+
+    function nextQuestionForPhase() {
+      const phase = phases[currentPhaseIndex];
+      questionCursor[currentPhaseIndex] =
+        (questionCursor[currentPhaseIndex] + 1) % phase.questions.length;
+      renderCurrentPhase();
+    }
+
+    function nextTechniqueForPhase() {
+      const phase = phases[currentPhaseIndex];
+      const index = techniqueCursor[currentPhaseIndex] % phase.techniques.length;
+      techniqueCursor[currentPhaseIndex] += 1;
+      return phase.techniques[index];
+    }
+
+    function countSyllablesInWord(word) {
+      let clean = word.toLowerCase().replace(/[^a-z']/g, "");
+      if (!clean) return 0;
+      if (clean.length <= 3) return 1;
+      clean = clean.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "");
+      clean = clean.replace(/^y/, "");
+      const groups = clean.match(/[aeiouy]{1,2}/g);
+      return groups ? groups.length : 1;
+    }
+
+    function countLineSyllables(line) {
+      return line
+        .split(/\s+/)
+        .filter(Boolean)
+        .reduce((sum, word) => sum + countSyllablesInWord(word), 0);
+    }
+
+    function meterState(count) {
+      if (!count) return { label: "Open line", className: "" };
+      if (count >= 9 && count <= 11) return { label: `≈ ${count} syllables`, className: "is-good" };
+      if (count === 8 || count === 12) return { label: `≈ ${count} syllables`, className: "is-warn" };
+      return { label: `≈ ${count} syllables`, className: "is-loose" };
+    }
+
+    function autoResize(textarea) {
+      textarea.style.height = "0px";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+
+    function renderDraftLines() {
+      draftLines.innerHTML = "";
+      const form = forms[currentForm];
+
+      for (let i = 0; i < 14; i += 1) {
+        if (form.headers[i]) {
+          const divider = document.createElement("div");
+          divider.className = "group-divider";
+          divider.textContent = form.headers[i];
+          draftLines.appendChild(divider);
+        }
+
+        const row = document.createElement("label");
+        row.className = "line-row";
+        row.setAttribute("for", `line-${i}`);
+
+        const meta = document.createElement("div");
+        meta.className = "line-meta";
+
+        const number = document.createElement("span");
+        number.className = "line-number";
+        number.textContent = i + 1;
+
+        const rhyme = document.createElement("span");
+        rhyme.className = "rhyme-tag";
+        rhyme.textContent = form.scheme[i];
+
+        meta.append(number, rhyme);
+
+        const textarea = document.createElement("textarea");
+        textarea.id = `line-${i}`;
+        textarea.className = "line-text";
+        textarea.rows = 1;
+        textarea.placeholder = `Line ${i + 1}`;
+        textarea.value = draft[i];
+        autoResize(textarea);
+
+        const meter = document.createElement("div");
+        meter.className = "line-meter";
+
+        const pill = document.createElement("span");
+        const count = countLineSyllables(draft[i]);
+        const state = meterState(count);
+        pill.className = `meter-pill ${state.className}`.trim();
+        pill.textContent = state.label;
+
+        meter.appendChild(pill);
+        row.append(meta, textarea, meter);
+        draftLines.appendChild(row);
+
+        textarea.addEventListener("input", (event) => {
+          draft[i] = event.target.value;
+          autoResize(event.target);
+
+          const newCount = countLineSyllables(draft[i]);
+          const newState = meterState(newCount);
+          pill.className = `meter-pill ${newState.className}`.trim();
+          pill.textContent = newState.label;
+
+          renderDiagnostics();
+        });
+      }
+    }
+
+    function draftAnalysis() {
+      const filledLines = draft.filter((line) => line.trim() !== "");
+      const filledCount = filledLines.length;
+      const counts = filledLines.map((line) => countLineSyllables(line));
+      const nearMeter = counts.filter((count) => count >= 9 && count <= 11).length;
+
+      const allText = filledLines.join(" ").toLowerCase();
+      const directAddress = /\b(you|your|yours|thee|thou)\b/.test(allText);
+      const abstractCount = countHits(allText, abstractWords);
+      const concreteCount = countHits(allText, concreteWords) + countHits(allText, bodyWords);
+      const sensoryCount = countHits(allText, sensoryWords);
+
+      const turnLines = [];
+      draft.forEach((line, index) => {
+        if (hasAny(line.toLowerCase(), contrastWords)) {
+          turnLines.push(index + 1);
+        }
+      });
+
+      const targetTurns = forms[currentForm].turns;
+      const turnNearTarget = turnLines.find((line) =>
+        targetTurns.some((turn) => Math.abs(line - turn) <= 1)
+      );
+
+      const endingText = draft.slice(12).join(" ").toLowerCase();
+      const hasSummaryEnding = hasAny(endingText, summaryWords);
+
+      const flags = [];
+      const strong = [];
+
+      if (filledCount === 0) {
+        flags.push("No draft yet. Start with one line that contains an object, action, or bodily sensation.");
+      }
+
+      if (filledCount > 0 && concreteCount < 2) {
+        flags.push("The draft still leans abstract. Give the feeling an object, room, gesture, or texture.");
+      } else if (concreteCount >= 2) {
+        strong.push("Concrete detail is already carrying some of the emotional weight.");
+      }
+
+      if (filledCount >= 8 && !turnNearTarget) {
+        flags.push(`The turn is still hidden. Try writing line ${targetTurns[0]} as the sentence where the speaker changes belief.`);
+      } else if (turnNearTarget) {
+        strong.push(`A shift is starting to appear around line ${turnNearTarget}.`);
+      }
+
+      if (filledCount > 0 && nearMeter < Math.max(2, Math.ceil(filledCount / 3))) {
+        flags.push("Most lines are drifting away from pentameter. Read aloud and trim to the natural beat.");
+      } else if (nearMeter >= Math.max(2, Math.floor(filledCount / 2))) {
+        strong.push("Several lines are already hovering near pentameter.");
+      }
+
+      if (!directAddress && filledCount >= 4) {
+        flags.push("The listener is still hazy. The poem may want a clearer addressee or stronger speaker position.");
+      } else if (directAddress) {
+        strong.push("Direct address gives the voice a clear target.");
+      }
+
+      if (sensoryCount >= 2) {
+        strong.push("Light, sound, texture, or temperature is beginning to shape the poem’s image world.");
+      } else if (filledCount >= 4) {
+        flags.push("The image world could use stronger sensory pressure—light, sound, or temperature would help.");
+      }
+
+      if (currentForm !== "petrarchan" && draft[12].trim() && draft[13].trim()) {
+        if (hasSummaryEnding) {
+          flags.push("The final couplet risks summarizing. Let it complicate or re-aim the poem instead.");
+        } else {
+          strong.push("The ending has room to transform rather than merely conclude.");
+        }
+      }
+
+      if (strong.length === 0) {
+        strong.push("The structure is beginning to take shape. Keep building pressure before polishing.");
+      }
+
+      let step = "Write one line that replaces an abstract noun with a thing the speaker can touch, hear, or carry.";
+
+      if (filledCount < 4) {
+        step = "Draft the first four lines around one object, one bodily sensation, and one sentence you almost do not want to say.";
+      } else if (concreteCount < 2) {
+        step = "Replace one abstract word with a handled object or physical action.";
+      } else if (filledCount >= 8 && !turnNearTarget) {
+        step = `Write line ${targetTurns[0]} first. Begin with “Yet,” “But,” or “Still,” then let the changed thought lead the rest.`;
+      } else if (currentForm !== "petrarchan" && (!draft[12].trim() || !draft[13].trim()) && filledCount >= 10) {
+        step = "Draft the couplet last, and make it tilt the poem instead of closing it neatly.";
+      } else if (filledCount > 0) {
+        step = "Read the loosest line aloud three times and cut or swap words until the beat lands closer to ten syllables.";
+      }
+
+      return {
+        filledCount,
+        nearMeter,
+        turnNearTarget,
+        concreteCount,
+        sensoryCount,
+        flags: flags.slice(0, 4),
+        strong: strong.slice(0, 4),
+        nextStep: step
+      };
+    }
+
+    function renderList(target, items) {
+      target.innerHTML = "";
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        target.appendChild(li);
+      });
+    }
+
+    function renderDiagnostics() {
+      const analysis = draftAnalysis();
+
+      metricLines.textContent = `${analysis.filledCount} / 14`;
+      metricMeter.textContent = analysis.filledCount
+        ? `${analysis.nearMeter} lines`
+        : "0";
+      metricTurn.textContent = analysis.turnNearTarget
+        ? `Near ${analysis.turnNearTarget}`
+        : "Hidden";
+      metricImage.textContent = analysis.concreteCount >= 3 || analysis.sensoryCount >= 2
+        ? "Present"
+        : "Thin";
+
+      renderList(redFlags, analysis.flags);
+      renderList(strongSigns, analysis.strong);
+      nextStep.textContent = analysis.nextStep;
+    }
+
+    phaseList.addEventListener("click", (event) => {
+      const button = event.target.closest(".phase-button");
+      if (!button) return;
+
+      currentPhaseIndex = Number(button.dataset.index);
+      renderPhases();
+      renderCurrentPhase();
+    });
+
+    formSwitch.addEventListener("click", (event) => {
+      const button = event.target.closest(".form-card");
+      if (!button) return;
+
+      currentForm = button.dataset.form;
+      renderForms();
+      renderDraftLines();
+      renderDiagnostics();
+    });
+
+    modeStrip.addEventListener("click", (event) => {
+      const button = event.target.closest(".mode-chip");
+      if (!button) return;
+
+      currentMode = button.dataset.mode;
+      renderModes();
+      renderCurrentPhase();
+    });
+
+    reflection.addEventListener("input", () => {
+      phaseNotes[phases[currentPhaseIndex].id] = reflection.value;
+    });
+
+    reflectBtn.addEventListener("click", () => {
+      const text = reflection.value.trim();
+      if (!text) {
+        reflection.focus();
+        return;
+      }
+
+      const phase = phases[currentPhaseIndex];
+      phaseNotes[phase.id] = reflection.value;
+
+      addLogEntry("user", "Your note", [text]);
+
+      const response = buildCoachFeedback(phase.id, text);
+      addLogEntry("coach", "Coach", [
+        { label: "Alive in this:", text: response.alive },
+        { label: "Build on:", text: response.strength },
+        { label: "Next question:", text: response.question }
+      ]);
+    });
+
+    stuckBtn.addEventListener("click", () => {
+      const technique = nextTechniqueForPhase();
+      addLogEntry("coach", "Coach", [
+        { label: "Technique:", text: technique }
+      ]);
+    });
+
+    questionBtn.addEventListener("click", () => {
+      nextQuestionForPhase();
+    });
+
+    renderPhases();
+    renderForms();
+    renderModes();
+    renderCurrentPhase();
+    renderDraftLines();
+    renderDiagnostics();
+    bootLog();
+  </script>
+</body>
+
+</html>
